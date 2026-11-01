@@ -1,150 +1,1023 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RulesHorror: Hotel</title>
+
 <style>
-:root{--gold:#e9bd58;--paper:#e8e0ca;--ink:#171817;--muted:#aaa28f}
-*{box-sizing:border-box}
-body{margin:0;background:#101211;color:var(--paper);font-family:Georgia,"Noto Serif KR",serif;overflow:hidden}
-button{font:inherit;cursor:pointer}
-#game{display:block;width:100vw;height:100vh;background:#151817;image-rendering:pixelated}
-#hud{position:fixed;inset:0;pointer-events:none}
-.topbar{position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:flex-start;text-shadow:0 2px 5px #000}
-.brand{font-size:clamp(14px,2vw,20px);letter-spacing:3px;color:var(--gold)}
-.stage{font:11px Arial,sans-serif;letter-spacing:2px;color:#c9c1ae;margin-top:5px}
-.timer{font:700 clamp(20px,3vw,30px) monospace;color:#f1e8d3;background:#090b0bcc;border:1px solid #6b624f;padding:8px 13px}
-.hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font:13px Arial,sans-serif;color:#ddd;background:#080a09cc;padding:9px 15px;border:1px solid #48483f;white-space:nowrap}
-#toast{position:absolute;top:85px;left:50%;transform:translateX(-50%);font:14px Arial,sans-serif;background:#111d;padding:10px 16px;border:1px solid #81775e;opacity:0;transition:opacity .25s;max-width:90vw;text-align:center}
-#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at center,#252824 0%,#090b0a 75%);display:flex;align-items:center;justify-content:center;padding:18px;z-index:5}
-.panel{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#d9d0b9;color:#1c1b17;border:7px double #514a3a;box-shadow:0 20px 80px #000;padding:clamp(18px,4vw,34px)}
-.kicker{text-align:center;font:11px Arial,sans-serif;letter-spacing:4px;color:#625943}
-h1{text-align:center;font-size:clamp(30px,6vw,52px);letter-spacing:4px;margin:8px 0 2px}
-.subtitle{text-align:center;font:12px Arial,sans-serif;letter-spacing:2px;margin-bottom:22px;color:#615b4d}
-.warning{border-top:1px solid #857b65;border-bottom:1px solid #857b65;padding:11px 0;text-align:center;font-weight:bold;margin-bottom:14px}
-.rules{font:14px/1.7 Arial,sans-serif;white-space:pre-line}
-.rules ol{padding-left:22px;margin:0}
-.rules li{padding:5px 0 8px;border-bottom:1px dotted #aaa18a}
-.rule-note{font-size:12px;color:#6b604c;margin-top:12px}
-.actions{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
-.primary,.secondary{border:0;padding:13px 25px;letter-spacing:2px;font-weight:bold}
-.primary{background:#252720;color:#f1e8d3}
-.primary:hover{background:#474637}
-.secondary{background:transparent;border:1px solid #5c5545;color:#29271f}
-#end{display:none;position:fixed;inset:0;z-index:8;background:#050706ee;align-items:center;justify-content:center;text-align:center;padding:20px}
-#end h2{font-size:clamp(32px,6vw,56px);letter-spacing:5px}
-#end p{font:15px/1.8 Arial,sans-serif;color:#c9c1ae}
-.scanlines{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.13;background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,#000 4px)}
-@media(max-width:600px){.hint{font-size:11px;bottom:10px}.topbar{top:10px;left:10px;right:10px}}
+:root {
+  --gold: #e9bd58;
+  --paper: #e8e0ca;
+  --ink: #171817;
+  --muted: #aaa28f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #101211;
+  color: var(--paper);
+  font-family: Georgia, "Noto Serif KR", serif;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: #151817;
+  image-rendering: pixelated;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.topbar {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-shadow: 0 2px 5px #000;
+}
+
+.brand {
+  font-size: clamp(14px, 2vw, 20px);
+  letter-spacing: 3px;
+  color: var(--gold);
+}
+
+.stage {
+  font: 11px Arial, sans-serif;
+  letter-spacing: 2px;
+  color: #c9c1ae;
+  margin-top: 5px;
+}
+
+.timer {
+  font: 700 clamp(20px, 3vw, 30px) monospace;
+  color: #f1e8d3;
+  background: #090b0bcc;
+  border: 1px solid #6b624f;
+  padding: 8px 13px;
+}
+
+.hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 13px Arial, sans-serif;
+  color: #ddd;
+  background: #080a09cc;
+  padding: 9px 15px;
+  border: 1px solid #48483f;
+  white-space: nowrap;
+}
+
+#toast {
+  position: absolute;
+  top: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 14px Arial, sans-serif;
+  background: #111d;
+  padding: 10px 16px;
+  border: 1px solid #81775e;
+  opacity: 0;
+  transition: opacity .25s;
+  max-width: 90vw;
+  text-align: center;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #252824 0%, #090b0a 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 5;
+}
+
+.panel {
+  width: min(760px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: #d9d0b9;
+  color: #1c1b17;
+  border: 7px double #514a3a;
+  box-shadow: 0 20px 80px #000;
+  padding: clamp(18px, 4vw, 34px);
+}
+
+.kicker {
+  text-align: center;
+  font: 11px Arial, sans-serif;
+  letter-spacing: 4px;
+  color: #625943;
+}
+
+h1 {
+  text-align: center;
+  font-size: clamp(30px, 6vw, 52px);
+  letter-spacing: 4px;
+  margin: 8px 0 2px;
+}
+
+.subtitle {
+  text-align: center;
+  font: 12px Arial, sans-serif;
+  letter-spacing: 2px;
+  margin-bottom: 22px;
+  color: #615b4d;
+}
+
+.warning {
+  border-top: 1px solid #857b65;
+  border-bottom: 1px solid #857b65;
+  padding: 11px 0;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.rules {
+  font: 14px/1.7 Arial, sans-serif;
+}
+
+.rules ol {
+  padding-left: 22px;
+  margin: 0;
+}
+
+.rules li {
+  padding: 5px 0 8px;
+  border-bottom: 1px dotted #aaa18a;
+}
+
+.rule-note {
+  font-size: 12px;
+  color: #6b604c;
+  margin-top: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.primary {
+  border: 0;
+  padding: 13px 25px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  background: #252720;
+  color: #f1e8d3;
+}
+
+.primary:hover {
+  background: #474637;
+}
+
+#end {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: #050706ee;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+#end h2 {
+  font-size: clamp(32px, 6vw, 56px);
+  letter-spacing: 5px;
+}
+
+#end p {
+  font: 15px/1.8 Arial, sans-serif;
+  color: #c9c1ae;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: .13;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    #000 4px
+  );
+}
+
+@media(max-width:600px) {
+  .hint {
+    font-size: 11px;
+    bottom: 10px;
+  }
+
+  .topbar {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+}
 </style>
 </head>
-<body>
-<canvas id="game"></canvas>
-<div class="scanlines"></div>
-<div id="hud">
-  <div class="topbar"><div><div class="brand">RULES HORROR</div><div class="stage">HOTEL · NIGHT SHIFT · STAGE 01</div></div><div class="timer" id="timer">07:00</div></div>
-  <div id="toast"></div>
-  <div class="hint" id="hint">A / D 이동　·　E 상호작용　·　마우스로 CCTV 조작</div>
-</div>
-<div id="overlay">
-  <div class="panel">
-    <div class="kicker">RULES HORROR · HOTEL</div>
-    <h1>근무 수칙</h1>
-    <div class="subtitle">야간 근무자용 / 반드시 숙지할 것</div>
-    <div class="warning">근무 시간은 총 7분입니다. 규칙을 어기지 마십시오.</div>
 
-<div class="rules">
-  <ol>
-    <li>복도나 CCTV에서 302호의 문이 열려 있는 것을 발견하면 즉시 문을 잠그십시오. 방 안에 들어가거나 내부를 들여다보지 마십시오. 302호는 열쇠와 마스터키로 열 수 없습니다. 문 안쪽 손잡이의 잠금장치를 누르고 닫으십시오.</li>
-    <li>객실 전화로 2층 남자화장실의 전구가 나갔다는 여성의 전화가 오면 절대 가지 마십시오. 조치하겠다고 답한 뒤, 2층 화장실 긴급공사를 안내 방송으로 공지하십시오.</li>
-    <li>목을 맨 여성의 발밑에 의자나 발판이 없다면 접근하지 말고 해당 객실을 이틀간 폐쇄하십시오.</li>
-    <li>계단을 내려가도 같은 층으로 돌아오면 구석을 바라보고 웅크린 채 눈과 귀를 막으십시오. 주간 직원이 발견할 때까지 움직이지 마십시오.</li>
-    <li>뱀이 쉬잇거리는 소리가 들리면 바닥에 엎드려 소리가 사라질 때까지 숨소리도 내지 마십시오. 이후 청소직원을 불러 천장의 얼룩을 제거하십시오.</li>
-    <li>복도에서 점액 자국을 발견하면 화재경보를 울리고 전원 대피시키십시오. 인원을 확인하고 2시간 뒤에 다시 들어가십시오.</li>
-    <li>데스크의 분홍색 전화기가 울리면 받지 마십시오. 전력선과 전화선이 연결되어 있지 않습니다.</li>
-    <li>비 오는 날, 젖지 않은 창백한 흑발 여성이 체크인하면 302호로 안내하십시오. 그녀가 방에 들어가면 안쪽 잠금장치를 누르고 문을 닫으십시오. 문에 귀를 대지 마십시오.</li>
-    <li>침대의 커다란 피 얼룩은 평범하게 정리해도 됩니다. 흙탕물이나 끈적한 액체라면 방을 폐쇄하고 관리실에 알리십시오.</li>
-    <li>후드를 쓴 여성 다섯 명이 이름이나 연락처를 물으면 알려주지 마십시오.</li>
-    <li>3층 여자화장실 맞은편, 벽 너머 허공에서 도움을 요청하는 여성이 보이면 다가가지 말고 도망치십시오.</li>
-    <li>관리실의 여성 직원이 개인 휴대폰으로 연락하면 즉시 끊으십시오. 관리실에는 여성 직원이 없습니다.</li>
-    <li>이 안내서에는 4번 항목이 존재하지 않습니다. 4번 항목을 보았다면 그 내용의 반대로 행동하십시오.</li>
-    <li>CCTV에서 객실 안 여성이 피를 흘리며 쓰러져도 구하러 가거나 구급차를 부르지 마십시오. 해당 구역 CCTV를 끄십시오.</li>
-  </ol>
-</div>
- 피를 흘리며 쓰러져도 구하러 가거나 구급차를 부르지 마십시오. 해당 구역 CCTV를 끄십시오.</li>
-<ol></div>/
-    <div class="rule-note">※ 이 문서는 근무 중에도 열람할 수 있습니다. 다만, 규칙서의 모든 내용이 진실이라고 보장할 수는 없습니다.</div>
-    <div class="actions"><button class="primary" id="start">확인 — 근무 시작</button></div>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="scanlines"></div>
+
+<div id="hud">
+
+  <div class="topbar">
+    <div>
+      <div class="brand">RULES HORROR</div>
+      <div class="stage">HOTEL · NIGHT SHIFT · STAGE 01</div>
+    </div>
+
+    <div class="timer" id="timer">07:00</div>
   </div>
+
+  <div id="toast"></div>
+
+  <div class="hint" id="hint">
+    A / D 이동　·　E 상호작용　·　마우스로 CCTV 조작
+  </div>
+
 </div>
-<div id="end"><div><div class="brand">RULES HORROR · HOTEL</div><h2 id="endTitle">근무 종료</h2><p id="endText"></p><button class="primary" onclick="location.reload()">다시 시작</button></div></div>
+
+<!-- 근무 수칙 -->
+<div id="overlay">
+
+  <div class="panel">
+
+    <div class="kicker">RULES HORROR · HOTEL</div>
+
+    <h1>근무 수칙</h1>
+
+    <div class="subtitle">
+      야간 근무자용 / 반드시 숙지할 것
+    </div>
+
+    <div class="warning">
+      근무 시간은 총 7분입니다. 규칙을 어기지 마십시오.
+    </div>
+
+    <div class="rules">
+      <ol>
+
+        <li>
+          복도나 CCTV에서 302호의 문이 열려 있는 것을 발견하면 즉시 문을 잠그십시오.
+          방 안에 들어가거나 내부를 들여다보지 마십시오.
+          302호는 열쇠와 마스터키로 열 수 없습니다.
+          문 안쪽 손잡이의 잠금장치를 누르고 닫으십시오.
+        </li>
+
+        <li>
+          객실 전화로 2층 남자화장실의 전구가 나갔다는 여성의 전화가 오면 절대 가지 마십시오.
+          조치하겠다고 답한 뒤, 2층 화장실 긴급공사를 안내 방송으로 공지하십시오.
+        </li>
+
+        <li>
+          목을 맨 여성의 발밑에 의자나 발판이 없다면 접근하지 말고
+          해당 객실을 이틀간 폐쇄하십시오.
+        </li>
+
+        <li>
+          계단을 내려가도 같은 층으로 돌아오면 구석을 바라보고 웅크린 채
+          눈과 귀를 막으십시오. 주간 직원이 발견할 때까지 움직이지 마십시오.
+        </li>
+
+        <li>
+          뱀이 쉬잇거리는 소리가 들리면 바닥에 엎드려 소리가 사라질 때까지
+          숨소리도 내지 마십시오. 이후 청소직원을 불러 천장의 얼룩을 제거하십시오.
+        </li>
+
+        <li>
+          복도에서 점액 자국을 발견하면 화재경보를 울리고 전원 대피시키십시오.
+          인원을 확인하고 2시간 뒤에 다시 들어가십시오.
+        </li>
+
+        <li>
+          데스크의 분홍색 전화기가 울리면 받지 마십시오.
+          전력선과 전화선이 연결되어 있지 않습니다.
+        </li>
+
+        <li>
+          비 오는 날, 젖지 않은 창백한 흑발 여성이 체크인하면 302호로 안내하십시오.
+          그녀가 방에 들어가면 안쪽 잠금장치를 누르고 문을 닫으십시오.
+          문에 귀를 대지 마십시오.
+        </li>
+
+        <li>
+          침대의 커다란 피 얼룩은 평범하게 정리해도 됩니다.
+          흙탕물이나 끈적한 액체라면 방을 폐쇄하고 관리실에 알리십시오.
+        </li>
+
+        <li>
+          후드를 쓴 여성 다섯 명이 이름이나 연락처를 물으면 알려주지 마십시오.
+        </li>
+
+        <li>
+          3층 여자화장실 맞은편, 벽 너머 허공에서 도움을 요청하는 여성이 보이면
+          다가가지 말고 도망치십시오.
+        </li>
+
+        <li>
+          관리실의 여성 직원이 개인 휴대폰으로 연락하면 즉시 끊으십시오.
+          관리실에는 여성 직원이 없습니다.
+        </li>
+
+        <li>
+          이 안내서에는 4번 항목이 존재하지 않습니다.
+          4번 항목을 보았다면 그 내용의 반대로 행동하십시오.
+        </li>
+
+        <li>
+          CCTV에서 객실 안 여성이 피를 흘리며 쓰러져도 구하러 가거나
+          구급차를 부르지 마십시오. 해당 구역 CCTV를 끄십시오.
+        </li>
+
+      </ol>
+    </div>
+
+    <div class="rule-note">
+      ※ 이 문서는 근무 중에도 열람할 수 없습니다.
+      규칙을 충분히 숙지한 뒤 근무를 시작하십시오.
+      규칙서가 사라지면 다시 확인할 수 없습니다.
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="start">
+        확인 — 근무 시작
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 게임 종료 -->
+<div id="end">
+
+  <div>
+
+    <div class="brand">RULES HORROR · HOTEL</div>
+
+    <h2 id="endTitle">근무 종료</h2>
+
+    <p id="endText"></p>
+
+    <button class="primary" onclick="location.reload()">
+      다시 시작
+    </button>
+
+  </div>
+
+</div>
+
 <script>
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-let W=1280,H=720,player={x:170,y:0,w:42,h:92,dir:1},camera=0,started=false,ended=false,remaining=420,last=0,toastTimer=0;
-const playerArt=new Image(),corpseArt=new Image(),womanArt=new Image();playerArt.src='assets/player.png';corpseArt.src='assets/rule3_corpse.png';womanArt.src='assets/rule9_woman.png';
-let doorOpen=false,doorLocked=false,doorEventAt=72,doorDiscovered=false,cctv=false,phoneRang=false,phoneResolved=false,phoneAt=190,alarm=false,events=[];
-const worldW=2200,floorY=570;
-function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;W=canvas.width;H=canvas.height;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=innerWidth;H=innerHeight;draw()}
-addEventListener('resize',resize);
-function msg(t){const el=document.getElementById('toast');el.textContent=t;el.style.opacity=1;toastTimer=3.5}
-function fmt(t){let m=Math.floor(t/60),s=Math.floor(t%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function start(){document.getElementById('overlay').style.display='none';started=true;last=performance.now();msg('야간 근무가 시작되었습니다. 근무 시간은 7분입니다.');requestAnimationFrame(loop)}
-document.getElementById('start').onclick=start;
-function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}
-function text(t,x,y,size=14,color='#d8cfb8',font='Arial'){ctx.fillStyle=color;ctx.font=`${size}px ${font}`;ctx.fillText(t,x,y)}
-function draw(){
- ctx.clearRect(0,0,W,H);
- let scale=Math.min(W/1280,H/720);ctx.save();ctx.scale(scale,scale);let vw=W/scale,vh=H/scale;
- // Background atmosphere
- let g=ctx.createLinearGradient(0,0,0,720);g.addColorStop(0,'#111615');g.addColorStop(.58,'#202321');g.addColorStop(1,'#080a09');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);
- // distant wall and ceiling
- rect(0,100,1280,470,'#252925');rect(0,100,1280,12,'#0d100f');rect(0,555,1280,18,'#090b0a');
- for(let x=-((camera*.35)%260);x<1350;x+=260){rect(x,140,2,400,'#303630');rect(x+8,160,70,2,'#353b34')}
- // ceiling lights
- for(let x=-((camera*.35)%330)+90;x<1350;x+=330){rect(x,118,110,5,'#aaa88a');rect(x+8,123,94,4,'#5b5e4b')}
- // floor
- rect(0,570,1280,150,'#171b19');for(let x=-camera%80;x<1300;x+=80){rect(x,570,1,150,'#252a25')}
- // doors
- for(let i=0;i<6;i++){let wx=280+i*310,sx=wx-camera;if(sx<-100||sx>1350)continue;let is302=i===1;rect(sx,250,112,320,is302&&doorOpen?'#17120f':'#342e25');rect(sx+7,257,98,306,is302&&doorOpen?'#080706':'#40382c');rect(sx+14,265,84,286,is302&&doorOpen?'#080706':'#4b4031');rect(sx+84,405,5,5,'#bba46c');text(String(301+i),sx+42,238,15,is302?'#d7bd77':'#a99d81');if(is302&&doorOpen){rect(sx+12,270,78,275,'#030303');if(!doorLocked)rect(sx+30,286,38,2,'#5a2520')}}
- // Rule 3: a silent figure is visible inside a room, never approached automatically
- if(remaining<300){let cx=280+2*310-camera;if(cx>-120&&cx<1300){ctx.globalAlpha=.88;if(corpseArt.complete)ctx.drawImage(corpseArt,cx+28,330,58,145);ctx.globalAlpha=1}}
- // Rule 9: the woman is completely dry, standing quietly in the corridor
- if(remaining<220){let wx=1450-camera;if(wx>-150&&wx<1350){if(womanArt.complete)ctx.drawImage(womanArt,wx, floorY-170,82,170)}}
- // desk
- let dx=45-camera;if(dx>-240&&dx<1280){rect(dx,420,190,150,'#40372b');rect(dx+12,390,166,38,'#5a4b36');rect(dx+25,340,62,48,'#101715');rect(dx+31,346,50,34,'#526052');rect(dx+98,340,62,48,'#111714');rect(dx+104,346,50,34,'#526052');text('CCTV',dx+37,370,9,'#c2c8a5');text('DESK',dx+69,595,12,'#a89c7e');rect(dx+125,382,13,8,'#c78b9a')}
- // CCTV overlay
- if(cctv){rect(0,0,1280,720,'#030706ee');text('SECURITY CAMERA  /  CORRIDOR',70,90,20,'#d5d1b8');rect(90,130,1100,470,'#202721');for(let i=0;i<6;i++){let x=140+i*170;rect(x,200,100,340,'#40382d');text(String(301+i),x+35,190,13)}if(doorOpen){rect(480,200,100,340,'#050505');text('DOOR OPEN',475,570,14,'#d16c60')}text('CAM 02  ● REC',100,625,13,'#bd675b');text('E 또는 ESC를 눌러 CCTV 종료',850,660,14)}
- // player
- if(!cctv){let px=player.x-camera; if(px>-80&&px<1340){if(playerArt.complete) {ctx.save();if(player.dir<0){ctx.translate(px*2,0);ctx.scale(-1,1);ctx.drawImage(playerArt,px-24,floorY-92,48,92)}else{ctx.drawImage(playerArt,px-24,floorY-92,48,92)}ctx.restore()}else{rect(px-10,floorY-58,20,58,'#111311')}}}
- // interact labels
- if(!cctv){text('A / D  이동',25,675,13,'#8f9588');text('E  상호작용',140,675,13,'#8f9588');text('데스크',70-camera,320,12,'#d2c6a7');text('302호',280+1*310-camera,220,12,'#d7bd77')}
- // vignette
- let vg=ctx.createRadialGradient(640,350,180,640,350,760);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#0009');ctx.fillStyle=vg;ctx.fillRect(0,0,1280,720);
- ctx.restore();
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let W = 1280;
+let H = 720;
+
+let player = {
+  x: 170,
+  y: 0,
+  w: 42,
+  h: 92,
+  dir: 1
+};
+
+let camera = 0;
+let started = false;
+let ended = false;
+
+let remaining = 420;
+let last = 0;
+let toastTimer = 0;
+
+const playerArt = new Image();
+const corpseArt = new Image();
+const womanArt = new Image();
+
+playerArt.src = 'assets/player.png';
+corpseArt.src = 'assets/rule3_corpse.png';
+womanArt.src = 'assets/rule9_woman.png';
+
+let doorOpen = false;
+let doorLocked = false;
+let doorEventAt = 72;
+let doorDiscovered = false;
+
+let cctv = false;
+
+let phoneRang = false;
+let phoneResolved = false;
+let phoneAt = 190;
+
+const worldW = 2200;
+const floorY = 570;
+
+function resize() {
+
+  canvas.width = innerWidth * devicePixelRatio;
+  canvas.height = innerHeight * devicePixelRatio;
+
+  W = innerWidth;
+  H = innerHeight;
+
+  ctx.setTransform(
+    devicePixelRatio, 0,
+    0, devicePixelRatio,
+    0, 0
+  );
+
+  draw();
 }
-const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if([' ','arrowleft','arrowright'].includes(e.key))e.preventDefault();if(!started||ended)return;if(e.key.toLowerCase()==='e'||e.key==='Escape')interact()});
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-function interact(){
- if(cctv){cctv=false;msg('CCTV 화면을 종료했습니다.');draw();return}
- let wx=player.x;
- if(Math.abs(wx-115)<105){cctv=true;msg('CCTV를 확인합니다. 화면에서 302호의 상태를 확인하십시오.');draw();return}
- if(Math.abs(wx-(280+1*310+55))<95&&doorOpen&&!doorLocked){doorLocked=true;doorOpen=false;msg('302호의 문을 잠갔습니다. 안쪽을 들여다보지 않았습니다.');draw();return}
- if(Math.abs(wx-138)<90&&phoneRang&&!phoneResolved){phoneResolved=true;msg('분홍색 전화는 받지 않았습니다. 안내 방송으로 2층 화장실 공사를 공지해야 합니다.');draw();return}
- msg('주변에는 상호작용할 수 있는 대상이 없습니다.');
+
+addEventListener('resize', resize);
+
+function msg(t) {
+
+  const el = document.getElementById('toast');
+
+  el.textContent = t;
+  el.style.opacity = 1;
+
+  toastTimer = 3.5;
 }
-function loop(now){
- if(!started||ended)return;let dt=Math.min((now-last)/1000,.05);last=now;remaining-=dt;
- if(remaining<=0){remaining=0;finish(true);return}
- if(!cctv){if(keys.a||keys.arrowleft){player.x-=220*dt;player.dir=-1}if(keys.d||keys.arrowright){player.x+=220*dt;player.dir=1}player.x=Math.max(20,Math.min(worldW-30,player.x));camera=Math.max(0,Math.min(worldW-1280,player.x-420))}
- let elapsed=420-remaining;
-  if(elapsed>doorEventAt&&!doorDiscovered){doorOpen=true;doorDiscovered=true;msg('복도 어딘가에서 문이 닫히는 소리가 들렸습니다. CCTV를 확인하십시오.')}
- if(elapsed>phoneAt&&!phoneRang){phoneRang=true;msg('데스크의 분홍색 전화기가 울리기 시작했습니다. 받지 마십시오.')}
- if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)document.getElementById('toast').style.opacity=0}
- document.getElementById('timer').textContent=fmt(remaining);draw();requestAnimationFrame(loop)
+
+function fmt(t) {
+
+  let m = Math.floor(t / 60);
+  let s = Math.floor(t % 60);
+
+  return String(m).padStart(2, '0') +
+         ':' +
+         String(s).padStart(2, '0');
 }
-function finish(win){ended=true;document.getElementById('end').style.display='flex';document.getElementById('endTitle').textContent=win?'SURVIVED':'YOU ARE DEAD';document.getElementById('endText').textContent=win?'7분 동안 생존했습니다. 야간 근무가 종료되었습니다.':'규칙을 지키지 못했습니다. 이번 근무는 여기서 끝났습니다.'}
+
+/*
+  규칙서 시작 버튼.
+  시작 후에는 overlay를 다시 열 수 있는 기능이 없다.
+*/
+
+function start() {
+
+  if (started) return;
+
+  document.getElementById('overlay').style.display = 'none';
+
+  started = true;
+  last = performance.now();
+
+  msg('규칙서는 다시 확인할 수 없습니다. 야간 근무가 시작되었습니다.');
+
+  requestAnimationFrame(loop);
+}
+
+document.getElementById('start').onclick = start;
+
+function rect(x, y, w, h, c) {
+
+  ctx.fillStyle = c;
+  ctx.fillRect(x, y, w, h);
+}
+
+function text(t, x, y, size = 14, color = '#d8cfb8') {
+
+  ctx.fillStyle = color;
+  ctx.font = `${size}px Arial`;
+  ctx.fillText(t, x, y);
+}
+
+function draw() {
+
+  ctx.clearRect(0, 0, W, H);
+
+  let scale = Math.min(W / 1280, H / 720);
+
+  ctx.save();
+  ctx.scale(scale, scale);
+
+  // 배경
+  let g = ctx.createLinearGradient(0, 0, 0, 720);
+
+  g.addColorStop(0, '#111615');
+  g.addColorStop(.58, '#202321');
+  g.addColorStop(1, '#080a09');
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 1280, 720);
+
+  // 벽
+  rect(0, 100, 1280, 470, '#252925');
+  rect(0, 100, 1280, 12, '#0d100f');
+  rect(0, 555, 1280, 18, '#090b0a');
+
+  for (let x = -((camera * .35) % 260); x < 1350; x += 260) {
+
+    rect(x, 140, 2, 400, '#303630');
+    rect(x + 8, 160, 70, 2, '#353b34');
+
+  }
+
+  // 천장 조명
+  for (let x = -((camera * .35) % 330) + 90; x < 1350; x += 330) {
+
+    rect(x, 118, 110, 5, '#aaa88a');
+    rect(x + 8, 123, 94, 4, '#5b5e4b');
+
+  }
+
+  // 바닥
+  rect(0, 570, 1280, 150, '#171b19');
+
+  for (let x = -camera % 80; x < 1300; x += 80) {
+
+    rect(x, 570, 1, 150, '#252a25');
+
+  }
+
+  // 객실 문
+  for (let i = 0; i < 6; i++) {
+
+    let wx = 280 + i * 310;
+    let sx = wx - camera;
+
+    if (sx < -100 || sx > 1350) continue;
+
+    let is302 = i === 1;
+
+    rect(
+      sx, 250, 112, 320,
+      is302 && doorOpen ? '#17120f' : '#342e25'
+    );
+
+    rect(
+      sx + 7, 257, 98, 306,
+      is302 && doorOpen ? '#080706' : '#40382c'
+    );
+
+    rect(
+      sx + 14, 265, 84, 286,
+      is302 && doorOpen ? '#080706' : '#4b4031'
+    );
+
+    rect(sx + 84, 405, 5, 5, '#bba46c');
+
+    text(
+      String(301 + i),
+      sx + 42,
+      238,
+      15,
+      is302 ? '#d7bd77' : '#a99d81'
+    );
+
+    if (is302 && doorOpen) {
+
+      rect(sx + 12, 270, 78, 275, '#030303');
+
+      if (!doorLocked) {
+        rect(sx + 30, 286, 38, 2, '#5a2520');
+      }
+
+    }
+
+  }
+
+  // 기존 3번 여성
+  if (remaining < 300) {
+
+    let cx = 280 + 2 * 310 - camera;
+
+    if (cx > -120 && cx < 1300) {
+
+      ctx.globalAlpha = .88;
+
+      if (corpseArt.complete && corpseArt.naturalWidth > 0) {
+
+        ctx.drawImage(
+          corpseArt,
+          cx + 28,
+          330,
+          58,
+          145
+        );
+
+      }
+
+      ctx.globalAlpha = 1;
+
+    }
+
+  }
+
+  // 기존 9번 여성
+  // 비 오는 날에도 젖지 않은 모습으로 표시
+  if (remaining < 220) {
+
+    let wx = 1450 - camera;
+
+    if (wx > -150 && wx < 1350) {
+
+      if (womanArt.complete && womanArt.naturalWidth > 0) {
+
+        ctx.drawImage(
+          womanArt,
+          wx,
+          floorY - 170,
+          82,
+          170
+        );
+
+      }
+
+    }
+
+  }
+
+  // 데스크
+  let dx = 45 - camera;
+
+  if (dx > -240 && dx < 1280) {
+
+    rect(dx, 420, 190, 150, '#40372b');
+    rect(dx + 12, 390, 166, 38, '#5a4b36');
+
+    rect(dx + 25, 340, 62, 48, '#101715');
+    rect(dx + 31, 346, 50, 34, '#526052');
+
+    rect(dx + 98, 340, 62, 48, '#111714');
+    rect(dx + 104, 346, 50, 34, '#526052');
+
+    text('CCTV', dx + 37, 370, 9, '#c2c8a5');
+    text('DESK', dx + 69, 595, 12, '#a89c7e');
+
+    // 분홍색 전화기
+    rect(dx + 125, 382, 13, 8, '#c78b9a');
+
+  }
+
+  // CCTV
+  if (cctv) {
+
+    rect(0, 0, 1280, 720, '#030706ee');
+
+    text(
+      'SECURITY CAMERA / CORRIDOR',
+      70, 90, 20, '#d5d1b8'
+    );
+
+    rect(90, 130, 1100, 470, '#202721');
+
+    for (let i = 0; i < 6; i++) {
+
+      let x = 140 + i * 170;
+
+      rect(x, 200, 100, 340, '#40382d');
+      text(String(301 + i), x + 35, 190, 13);
+
+    }
+
+    if (doorOpen) {
+
+      rect(480, 200, 100, 340, '#050505');
+
+      text(
+        'DOOR OPEN',
+        475, 570, 14, '#d16c60'
+      );
+
+    }
+
+    text('CAM 02  ● REC', 100, 625, 13, '#bd675b');
+
+    text(
+      'E 또는 ESC를 눌러 CCTV 종료',
+      850, 660, 14
+    );
+
+  }
+
+  // 플레이어
+  if (!cctv) {
+
+    let px = player.x - camera;
+
+    if (px > -80 && px < 1340) {
+
+      if (playerArt.complete && playerArt.naturalWidth > 0) {
+
+        ctx.save();
+
+        if (player.dir < 0) {
+
+          ctx.translate(px * 2, 0);
+          ctx.scale(-1, 1);
+
+          ctx.drawImage(
+            playerArt,
+            px - 24,
+            floorY - 92,
+            48,
+            92
+          );
+
+        } else {
+
+          ctx.drawImage(
+            playerArt,
+            px - 24,
+            floorY - 92,
+            48,
+            92
+          );
+
+        }
+
+        ctx.restore();
+
+      } else {
+
+        rect(px - 10, floorY - 58, 20, 58, '#111311');
+
+      }
+
+    }
+
+  }
+
+  // 상호작용 안내
+  if (!cctv) {
+
+    text('A / D 이동', 25, 675, 13, '#8f9588');
+    text('E 상호작용', 140, 675, 13, '#8f9588');
+
+    text('데스크', 70 - camera, 320, 12, '#d2c6a7');
+    text('302호', 280 + 310 - camera, 220, 12, '#d7bd77');
+
+  }
+
+  // 어두운 화면 가장자리
+  let vg = ctx.createRadialGradient(
+    640, 350, 180,
+    640, 350, 760
+  );
+
+  vg.addColorStop(0, '#0000');
+  vg.addColorStop(1, '#0009');
+
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, 1280, 720);
+
+  ctx.restore();
+
+}
+
+const keys = {};
+
+addEventListener('keydown', e => {
+
+  keys[e.key.toLowerCase()] = true;
+
+  if ([' ', 'arrowleft', 'arrowright'].includes(e.key)) {
+    e.preventDefault();
+  }
+
+  if (!started || ended) return;
+
+  if (
+    e.key.toLowerCase() === 'e' ||
+    e.key === 'Escape'
+  ) {
+
+    interact();
+
+  }
+
+});
+
+addEventListener('keyup', e => {
+
+  keys[e.key.toLowerCase()] = false;
+
+});
+
+function interact() {
+
+  if (cctv) {
+
+    cctv = false;
+
+    msg('CCTV 화면을 종료했습니다.');
+
+    draw();
+
+    return;
+
+  }
+
+  let wx = player.x;
+
+  // CCTV 조작
+  if (Math.abs(wx - 115) < 105) {
+
+    cctv = true;
+
+    msg('CCTV를 확인합니다. 화면에서 302호의 상태를 확인하십시오.');
+
+    draw();
+
+    return;
+
+  }
+
+  // 302호 문 잠그기
+  if (
+    Math.abs(wx - (280 + 1 * 310 + 55)) < 95 &&
+    doorOpen &&
+    !doorLocked
+  ) {
+
+    doorLocked = true;
+    doorOpen = false;
+
+    msg('302호의 문을 잠갔습니다. 안쪽을 들여다보지 않았습니다.');
+
+    draw();
+
+    return;
+
+  }
+
+  // 분홍색 전화기
+  if (
+    Math.abs(wx - 138) < 90 &&
+    phoneRang &&
+    !phoneResolved
+  ) {
+
+    phoneResolved = true;
+
+    msg('분홍색 전화는 받지 않았습니다. 안내 방송으로 2층 화장실 공사를 공지해야 합니다.');
+
+    draw();
+
+    return;
+
+  }
+
+  msg('주변에는 상호작용할 수 있는 대상이 없습니다.');
+
+}
+
+function loop(now) {
+
+  if (!started || ended) return;
+
+  let dt = Math.min((now - last) / 1000, .05);
+
+  last = now;
+
+  remaining -= dt;
+
+  if (remaining <= 0) {
+
+    remaining = 0;
+
+    finish(true);
+
+    return;
+
+  }
+
+  // 이동
+  if (!cctv) {
+
+    if (keys.a || keys.arrowleft) {
+
+      player.x -= 220 * dt;
+      player.dir = -1;
+
+    }
+
+    if (keys.d || keys.arrowright) {
+
+      player.x += 220 * dt;
+      player.dir = 1;
+
+    }
+
+    player.x = Math.max(
+      20,
+      Math.min(worldW - 30, player.x)
+    );
+
+    camera = Math.max(
+      0,
+      Math.min(worldW - 1280, player.x - 420)
+    );
+
+  }
+
+  let elapsed = 420 - remaining;
+
+  // 302호 문 이벤트
+  if (
+    elapsed > doorEventAt &&
+    !doorDiscovered
+  ) {
+
+    doorOpen = true;
+    doorDiscovered = true;
+
+    msg('복도 어딘가에서 문이 닫히는 소리가 들렸습니다. CCTV를 확인하십시오.');
+
+  }
+
+  // 분홍색 전화 이벤트
+  if (
+    elapsed > phoneAt &&
+    !phoneRang
+  ) {
+
+    phoneRang = true;
+
+    msg('데스크의 분홍색 전화기가 울리기 시작했습니다. 받지 마십시오.');
+
+  }
+
+  if (toastTimer > 0) {
+
+    toastTimer -= dt;
+
+    if (toastTimer <= 0) {
+
+      document.getElementById('toast').style.opacity = 0;
+
+    }
+
+  }
+
+  document.getElementById('timer').textContent = fmt(remaining);
+
+  draw();
+
+  requestAnimationFrame(loop);
+
+}
+
+function finish(win) {
+
+  ended = true;
+
+  document.getElementById('end').style.display = 'flex';
+
+  document.getElementById('endTitle').textContent =
+    win ? 'SURVIVED' : 'YOU ARE DEAD';
+
+  document.getElementById('endText').textContent =
+    win
+      ? '7분 동안 생존했습니다. 야간 근무가 종료되었습니다.'
+      : '규칙을 지키지 못했습니다. 이번 근무는 여기서 끝났습니다.';
+
+}
+
 resize();
+
 </script>
+
 </body>
 </html>

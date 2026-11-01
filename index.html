@@ -77,7 +77,8 @@ h1{text-align:center;font-size:clamp(30px,6vw,52px);letter-spacing:4px;margin:8p
 <div id="end"><div><div class="brand">RULES HORROR · HOTEL</div><h2 id="endTitle">근무 종료</h2><p id="endText"></p><button class="primary" onclick="location.reload()">다시 시작</button></div></div>
 <script>
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-let W=1280,H=720,player={x:170,y:0,w:28,h:58,dir:1},camera=0,started=false,ended=false,remaining=420,last=0,toastTimer=0;
+let W=1280,H=720,player={x:170,y:0,w:42,h:92,dir:1},camera=0,started=false,ended=false,remaining=420,last=0,toastTimer=0;
+const playerArt=new Image(),corpseArt=new Image(),womanArt=new Image();playerArt.src='assets/player.png';corpseArt.src='assets/rule3_corpse.png';womanArt.src='assets/rule9_woman.png';
 let doorOpen=false,doorLocked=false,doorEventAt=72,doorDiscovered=false,cctv=false,phoneRang=false,phoneResolved=false,phoneAt=190,alarm=false,events=[];
 const worldW=2200,floorY=570;
 function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;W=canvas.width;H=canvas.height;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=innerWidth;H=innerHeight;draw()}
@@ -101,15 +102,19 @@ function draw(){
  // floor
  rect(0,570,1280,150,'#171b19');for(let x=-camera%80;x<1300;x+=80){rect(x,570,1,150,'#252a25')}
  // doors
- for(let i=0;i<6;i++){let wx=280+i*310,sx=wx-camera;if(sx<-100||sx>1350)continue;let is302=i===2;rect(sx,250,112,320,is302&&doorOpen?'#17120f':'#342e25');rect(sx+7,257,98,306,is302&&doorOpen?'#080706':'#40382c');rect(sx+14,265,84,286,is302&&doorOpen?'#080706':'#4b4031');rect(sx+84,405,5,5,'#bba46c');text(is302?'302':String(301+i),sx+42,238,15,is302?'#d7bd77':'#a99d81');if(is302&&doorOpen){rect(sx+12,270,78,275,'#030303');if(!doorLocked)rect(sx+30,286,38,2,'#5a2520')}}
+ for(let i=0;i<6;i++){let wx=280+i*310,sx=wx-camera;if(sx<-100||sx>1350)continue;let is302=i===1;rect(sx,250,112,320,is302&&doorOpen?'#17120f':'#342e25');rect(sx+7,257,98,306,is302&&doorOpen?'#080706':'#40382c');rect(sx+14,265,84,286,is302&&doorOpen?'#080706':'#4b4031');rect(sx+84,405,5,5,'#bba46c');text(String(301+i),sx+42,238,15,is302?'#d7bd77':'#a99d81');if(is302&&doorOpen){rect(sx+12,270,78,275,'#030303');if(!doorLocked)rect(sx+30,286,38,2,'#5a2520')}}
+ // Rule 3: a silent figure is visible inside a room, never approached automatically
+ if(remaining<300){let cx=280+2*310-camera;if(cx>-120&&cx<1300){ctx.globalAlpha=.88;if(corpseArt.complete)ctx.drawImage(corpseArt,cx+28,330,58,145);ctx.globalAlpha=1}}
+ // Rule 9: the woman is completely dry, standing quietly in the corridor
+ if(remaining<220){let wx=1450-camera;if(wx>-150&&wx<1350){if(womanArt.complete)ctx.drawImage(womanArt,wx, floorY-170,82,170)}}
  // desk
  let dx=45-camera;if(dx>-240&&dx<1280){rect(dx,420,190,150,'#40372b');rect(dx+12,390,166,38,'#5a4b36');rect(dx+25,340,62,48,'#101715');rect(dx+31,346,50,34,'#526052');rect(dx+98,340,62,48,'#111714');rect(dx+104,346,50,34,'#526052');text('CCTV',dx+37,370,9,'#c2c8a5');text('DESK',dx+69,595,12,'#a89c7e');rect(dx+125,382,13,8,'#c78b9a')}
  // CCTV overlay
  if(cctv){rect(0,0,1280,720,'#030706ee');text('SECURITY CAMERA  /  CORRIDOR',70,90,20,'#d5d1b8');rect(90,130,1100,470,'#202721');for(let i=0;i<6;i++){let x=140+i*170;rect(x,200,100,340,'#40382d');text(String(301+i),x+35,190,13)}if(doorOpen){rect(480,200,100,340,'#050505');text('DOOR OPEN',475,570,14,'#d16c60')}text('CAM 02  ● REC',100,625,13,'#bd675b');text('E 또는 ESC를 눌러 CCTV 종료',850,660,14)}
  // player
- if(!cctv){let px=player.x-camera; if(px>-60&&px<1340){rect(px-10,floorY-58,20,58,'#111311');rect(px-8,floorY-55,16,22,'#b9b29c');rect(px-9,floorY-31,18,29,'#343c3a');rect(px-10,floorY-4,9,4,'#0a0b0a');rect(px+1,floorY-4,9,4,'#0a0b0a');rect(px+player.dir*8-2,floorY-49,3,3,'#161616')}}
+ if(!cctv){let px=player.x-camera; if(px>-80&&px<1340){if(playerArt.complete) {ctx.save();if(player.dir<0){ctx.translate(px*2,0);ctx.scale(-1,1);ctx.drawImage(playerArt,px-24,floorY-92,48,92)}else{ctx.drawImage(playerArt,px-24,floorY-92,48,92)}ctx.restore()}else{rect(px-10,floorY-58,20,58,'#111311')}}}
  // interact labels
- if(!cctv){text('A / D  이동',25,675,13,'#8f9588');text('E  상호작용',140,675,13,'#8f9588');text('데스크',70-camera,320,12,'#d2c6a7');text('302호',280+2*310-camera,220,12,'#d7bd77')}
+ if(!cctv){text('A / D  이동',25,675,13,'#8f9588');text('E  상호작용',140,675,13,'#8f9588');text('데스크',70-camera,320,12,'#d2c6a7');text('302호',280+1*310-camera,220,12,'#d7bd77')}
  // vignette
  let vg=ctx.createRadialGradient(640,350,180,640,350,760);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#0009');ctx.fillStyle=vg;ctx.fillRect(0,0,1280,720);
  ctx.restore();
@@ -120,7 +125,7 @@ function interact(){
  if(cctv){cctv=false;msg('CCTV 화면을 종료했습니다.');draw();return}
  let wx=player.x;
  if(Math.abs(wx-115)<105){cctv=true;msg('CCTV를 확인합니다. 화면에서 302호의 상태를 확인하십시오.');draw();return}
- if(Math.abs(wx-(280+2*310+55))<95&&doorOpen&&!doorLocked){doorLocked=true;doorOpen=false;msg('302호의 문을 잠갔습니다. 안쪽을 들여다보지 않았습니다.');draw();return}
+ if(Math.abs(wx-(280+1*310+55))<95&&doorOpen&&!doorLocked){doorLocked=true;doorOpen=false;msg('302호의 문을 잠갔습니다. 안쪽을 들여다보지 않았습니다.');draw();return}
  if(Math.abs(wx-138)<90&&phoneRang&&!phoneResolved){phoneResolved=true;msg('분홍색 전화는 받지 않았습니다. 안내 방송으로 2층 화장실 공사를 공지해야 합니다.');draw();return}
  msg('주변에는 상호작용할 수 있는 대상이 없습니다.');
 }
@@ -129,8 +134,7 @@ function loop(now){
  if(remaining<=0){remaining=0;finish(true);return}
  if(!cctv){if(keys.a||keys.arrowleft){player.x-=220*dt;player.dir=-1}if(keys.d||keys.arrowright){player.x+=220*dt;player.dir=1}player.x=Math.max(20,Math.min(worldW-30,player.x));camera=Math.max(0,Math.min(worldW-1280,player.x-420))}
  let elapsed=420-remaining;
- if(!doorEventAt===false){} 
- if(elapsed>doorEventAt&&!doorDiscovered){doorOpen=true;doorDiscovered=true;msg('복도 어딘가에서 문이 닫히는 소리가 들렸습니다. CCTV를 확인하십시오.')}
+  if(elapsed>doorEventAt&&!doorDiscovered){doorOpen=true;doorDiscovered=true;msg('복도 어딘가에서 문이 닫히는 소리가 들렸습니다. CCTV를 확인하십시오.')}
  if(elapsed>phoneAt&&!phoneRang){phoneRang=true;msg('데스크의 분홍색 전화기가 울리기 시작했습니다. 받지 마십시오.')}
  if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)document.getElementById('toast').style.opacity=0}
  document.getElementById('timer').textContent=fmt(remaining);draw();requestAnimationFrame(loop)
